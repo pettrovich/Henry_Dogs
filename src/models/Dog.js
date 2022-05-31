@@ -24,6 +24,11 @@ module.exports = (sequelize) => {
     },
     lifespan: {
       type: DataTypes.STRING
+    },
+    fromAPI: {
+      type: DataTypes.BOOLEAN,
+      allowNull: false,
+      defaultValue: false
     }
   });
 };
