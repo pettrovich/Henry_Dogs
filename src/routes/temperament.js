@@ -1,9 +1,9 @@
 const {Router} = require('express');
-const {Dog, Temperament} = require('../db');
+const {getAllTemperaments} = require("../controllers/temperament");
 const router = Router();
 
-router.get('/', (req,res) => {
-    return 0;
+router.get('/', async (req,res) => {
+    return await getAllTemperaments(res);
 });
 
 module.exports = router;

@@ -64,7 +64,7 @@ async function getDogsByName(name,res) {
         return {name,image,temperaments,weight};
     });
     if (dogList.length > 0) return res.json(dogList);
-    return res.send("No se encontraron perros con el nombre buscado.")
+    return res.status(404).send("No se encontraron perros con el nombre buscado.")
 }
 
 async function getDogsById(id,res) {
@@ -76,7 +76,7 @@ async function getDogsById(id,res) {
         return {name,image,temperaments,weight,height,lifespan};
     });
     if (dogList.length > 0) return res.json(dogList);
-    return res.send("No se encontraron perros con el id buscado.")
+    return res.status(404).send("No se encontraron perros con el id buscado.")
 }
 
-module.exports={getAllDogs,getDogsByName,getDogsById};
+module.exports={getAllDogs,getDogsByName,getDogsById,getAPIDogList};
