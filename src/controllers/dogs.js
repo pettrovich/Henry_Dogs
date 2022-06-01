@@ -32,7 +32,7 @@ async function getAPIDogList(breedName) {
 }
 
 async function getDBDogList(breedName,breedId) {
-    const dogList = [];
+    let dogList = [];
     const template = {};
     const attributes = ['id','name','weight','height','lifespan'];
     if (breedName) template.name = breedName;
