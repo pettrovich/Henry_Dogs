@@ -1,5 +1,6 @@
 const axios = require("axios");
 const URL = 'https://api.thedogapi.com/v1/breeds';
+const {Dog,Temperament} = require('../db');
 const {API_KEY} = process.env;
 
 function getURL(name) {
@@ -7,9 +8,9 @@ function getURL(name) {
     return `${URL}?api_key=${API_KEY}`;
 }
 
-async function getDogList(breedName) {
-    const apiURL = await axios.get(getURL(breedName));
-    const apiList = apiURL.data.map(breed => {
+async function getAPIDogList(breedName) {
+    const apiResponse = await axios.get(getURL(breedName));
+    const apiData = apiResponse.data.map(breed => {
         const id = breed.id;
         const name = breed.name;
     //     const image = breed.reference_image_id;
@@ -27,34 +28,54 @@ async function getDogList(breedName) {
                 lifespan,
                 temperaments}
     });
-    return apiList;
+    return apiData;
+}
+
+async function getDBDogList(breedName,breedId) {
+    const dogList = [];
+    const template = {};
+    const attributes = ['id','name','weight','height','lifespan'];
+    if (breedName) template.name = breedName;
+    if (breedId) template.name = breedId;
+    dogList = await Dog.findAll({
+        where: template,
+        attributes,
+        include: Temperament
+    });
+    return dogList;
 }
 
 async function getAllDogs(res) {
-    let dogList = await getDogList();
-    return  res.json(dogList.map(breed => {
+    const dogList1 = await getAPIDogList();
+    const dogList2 = await getDBDogList();
+    const dogList = dogList1.concat(dogList2).map(breed => {
         const {name,image,temperaments,weight} = breed;
         return {name,image,temperaments,weight};
-    }));
+    });
+    return  res.json(dogList);
 }
 
 async function getDogsByName(name,res) {
-    let dogList = await getDogList(name);
-    dogList = dogList.filter(breed => breed.name.toLowerCase().includes(name.toLowerCase()));
-    if (dogList.length > 0) return res.json(dogList.map(breed => {
-            const {name,image,temperaments,weight} = breed;
-            return {name,image,temperaments,weight};
-        }));
+    let dogList1 = await getAPIDogList(name);
+    dogList1 = dogList1.filter(breed => breed.name.toLowerCase().includes(name.toLowerCase()));
+    const dogList2 = await getDBDogList(name);
+    const dogList = dogList1.concat(dogList2).map(breed => {
+        const {name,image,temperaments,weight} = breed;
+        return {name,image,temperaments,weight};
+    });
+    if (dogList.length > 0) return res.json(dogList);
     return res.send("No se encontraron perros con el nombre buscado.")
 }
 
 async function getDogsById(id,res) {
-    let dogList = await getDogList();
-    dogList = dogList.filter(dog => dog.id == id);
-    if (dogList.length > 0) return res.json(dogList.map(breed => {
-            const {name,image,temperaments,weight,height,lifespan} = breed;
-            return {name,image,temperaments,weight,height,lifespan};
-        }));
+    let dogList1 = await getAPIDogList();
+    dogList1 = dogList1.filter(dog => dog.id == id);
+    const dogList2 = await getDBDogList(null,id);
+    const dogList = dogList1.concat(dogList2).map(breed => {
+        const {name,image,temperaments,weight,height,lifespan} = breed;
+        return {name,image,temperaments,weight,height,lifespan};
+    });
+    if (dogList.length > 0) return res.json(dogList);
     return res.send("No se encontraron perros con el id buscado.")
 }
 
